@@ -1,0 +1,33 @@
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  background-color: var(--background);
+  color: inherit;
+  margin: 1rem 0;
+  width: 100%;
+  max-width: 720px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+}
+
+.title {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 1.25rem;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+}

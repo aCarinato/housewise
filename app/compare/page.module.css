@@ -1,0 +1,52 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1.5rem;
+  gap: 2rem;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.04), transparent);
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 720px;
+}
+
+.header h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+}
+
+.placeholder {
+  font-size: 1rem;
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 3rem 1rem;
+  }
+
+  .placeholder {
+    font-size: 0.95rem;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .page {
+    background: linear-gradient(180deg, rgba(226, 232, 240, 0.08), transparent);
+  }
+
+  .placeholder {
+    color: rgba(226, 232, 240, 0.8);
+  }
+}

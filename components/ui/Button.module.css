@@ -1,0 +1,42 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.4rem;
+  border-radius: 4px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.primary {
+  background-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.primary:hover {
+  background-color: #1e40af;
+}
+
+.secondary {
+  background-color: transparent;
+  color: #1d4ed8;
+  border: 1px solid #1d4ed8;
+}
+
+.secondary:hover {
+  background-color: rgba(29, 78, 216, 0.1);
+}
+
+.secondary:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+.primary:focus-visible {
+  outline: 2px solid #1e3a8a;
+  outline-offset: 2px;
+}
