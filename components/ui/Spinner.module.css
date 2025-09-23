@@ -1,0 +1,38 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0;
+}
+
+.loader {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 4px solid rgba(30, 64, 175, 0.15);
+  border-top-color: rgba(30, 64, 175, 0.85);
+  animation: spin 0.9s linear infinite;
+}
+
+.label {
+  font-size: 0.95rem;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .loader {
+    border: 4px solid rgba(191, 219, 254, 0.25);
+    border-top-color: rgba(191, 219, 254, 0.9);
+  }
+
+  .label {
+    color: rgba(226, 232, 240, 0.75);
+  }
+}

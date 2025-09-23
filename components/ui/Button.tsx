@@ -5,9 +5,10 @@ type ButtonProps = {
   children: ReactNode;
   variant?: 'primary' | 'secondary';
   onClick?: () => void;
+  disabled?: boolean;
 };
 
-const Button = ({ children, variant = 'primary', onClick }: ButtonProps) => {
+const Button = ({ children, variant = 'primary', onClick, disabled }: ButtonProps) => {
   const variantClass =
     variant === 'secondary' ? styles.secondary : styles.primary;
 
@@ -16,6 +17,7 @@ const Button = ({ children, variant = 'primary', onClick }: ButtonProps) => {
       type="button"
       className={`${styles.button} ${variantClass}`}
       onClick={onClick}
+      disabled={disabled}
     >
       {children}
     </button>
