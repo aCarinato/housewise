@@ -77,7 +77,9 @@ const CATEGORIES: CategoryInfo[] = [
 ];
 
 const ComparePage = () => {
-  const [selectedCategory, setSelectedCategory] = useState<CategoryInfo['id'] | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<
+    CategoryInfo['id'] | null
+  >(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,14 +150,17 @@ const ComparePage = () => {
         : { error: await response.text() };
 
       if (!response.ok) {
-        throw new Error(payload?.error || 'Errore durante l\'analisi AI');
+        throw new Error(payload?.error || "Errore durante l'analisi AI");
       }
 
       setHasSubmitted(true);
       setAiResult(payload as EvaluateResponse);
       console.log('AI evaluation output:', payload);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Errore imprevisto durante l\'analisi AI';
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Errore imprevisto durante l'analisi AI";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -167,7 +172,10 @@ const ComparePage = () => {
       {isLoading ? <LoadingOverlay /> : null}
       <div className={styles.header}>
         <h1>Analisi Preventivo</h1>
-        <p>Carica un preventivo in PDF e lascia che Gemini evidenzi inclusioni, esclusioni e rischi principali.</p>
+        <p>
+          Carica un preventivo in PDF e lascia che Gemini evidenzi inclusioni,
+          esclusioni e rischi principali.
+        </p>
       </div>
 
       <Card subdued title="Seleziona il tipo di preventivo">
@@ -181,8 +189,9 @@ const ComparePage = () => {
       {selectedCategory ? (
         <Card title="Caricamento preventivo">
           <div className={styles.uploadArea}>
-            <label className={styles.fileLabel} htmlFor="quoteFile">
-              Seleziona file PDF del preventivo
+            {/* <p className={styles.fileLabel}>Seleziona il preventivo in formato PDF</p> */}
+            <label className={styles.fileButton} htmlFor="quoteFile">
+              Carica file PDF
             </label>
             <input
               id="quoteFile"
@@ -192,7 +201,9 @@ const ComparePage = () => {
               onChange={handleFileChange}
             />
             <p className={styles.fileHint}>{fileHint}</p>
-            <p className={styles.accepted}>Formato supportato: solo PDF (max 20MB)</p>
+            <p className={styles.accepted}>
+              Formato supportato: solo PDF (max 20MB)
+            </p>
 
             {error ? <p className={styles.error}>{error}</p> : null}
           </div>
