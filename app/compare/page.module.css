@@ -64,21 +64,6 @@
   color: rgba(15, 23, 42, 0.55);
 }
 
-.sourceLabel {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-}
-
-.sourceInput {
-  width: 64px;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid rgba(15, 23, 42, 0.2);
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  text-transform: uppercase;
-}
-
 .error {
   color: #b91c1c;
   font-weight: 600;
@@ -87,53 +72,6 @@
 .actions {
   display: flex;
   justify-content: center;
-}
-
-.outputBox {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-height: 360px;
-  overflow: auto;
-  padding-right: 0.5rem;
-}
-
-.outputIntro {
-  font-size: 0.9rem;
-  color: rgba(15, 23, 42, 0.65);
-}
-
-.outputList {
-  list-style: decimal;
-  padding-left: 1.5rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.outputItem code {
-  font-family: 'SFMono-Regular', ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.85rem;
-  background: rgba(15, 23, 42, 0.05);
-  padding: 0.35rem 0.5rem;
-  border-radius: 0.5rem;
-  display: inline-block;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.resultPre {
-  font-family: 'SFMono-Regular', ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  background: rgba(15, 23, 42, 0.05);
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  overflow: auto;
-  max-height: 360px;
-  white-space: pre;
 }
 
 @media (max-width: 768px) {
@@ -159,9 +97,7 @@
   .header p,
   .placeholder,
   .fileHint,
-  .accepted,
-  .sourceLabel,
-  .outputIntro {
+  .accepted {
     color: rgba(226, 232, 240, 0.75);
   }
 
@@ -178,12 +114,6 @@
     border-color: rgba(191, 219, 254, 0.4);
   }
 
-  .sourceInput {
-    border-color: rgba(148, 163, 184, 0.35);
-    background: rgba(148, 163, 184, 0.15);
-    color: rgba(226, 232, 240, 0.85);
-  }
-
   .outputItem code {
     background: rgba(148, 163, 184, 0.2);
   }
@@ -191,5 +121,15 @@
   .resultPre {
     background: rgba(148, 163, 184, 0.18);
     border-color: rgba(148, 163, 184, 0.3);
+  }
+
+  .findingCard {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.35);
+  }
+
+  .kindBadge {
+    background: rgba(96, 165, 250, 0.2);
+    color: rgba(191, 219, 254, 0.95);
   }
 }

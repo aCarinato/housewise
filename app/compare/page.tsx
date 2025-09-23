@@ -5,14 +5,12 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { bytesToReadable } from '@/lib/utils/file';
 import styles from './page.module.css';
+import EvaluateResults, {
+  EvaluateResponse,
+} from '@/components/EvaluateResults/EvaluateResults';
 
-const ACCEPTED_EXTENSIONS = ['.pdf', '.txt', '.csv', '.xlsx'];
-const ACCEPTED_TYPES = [
-  'application/pdf',
-  'text/plain',
-  'text/csv',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-];
+const ACCEPTED_EXTENSIONS = ['.pdf'];
+const ACCEPTED_TYPES = ['application/pdf'];
 
 function fileAllowed(file: File | null): boolean {
   if (!file) return false;
@@ -23,10 +21,9 @@ function fileAllowed(file: File | null): boolean {
 
 const ComparePage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [sourceLabel, setSourceLabel] = useState('A');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [aiResult, setAiResult] = useState<unknown>(null);
+  const [aiResult, setAiResult] = useState<EvaluateResponse | null>(null);
 
   const fileHint = useMemo(() => {
     if (!selectedFile) {
@@ -35,27 +32,6 @@ const ComparePage = () => {
     const size = bytesToReadable(selectedFile.size);
     return `${selectedFile.name}${size ? ` (${size})` : ''}`;
   }, [selectedFile]);
-
-  const formattedResult = useMemo(() => {
-    if (!aiResult) {
-      return '';
-    }
-
-    try {
-      return JSON.stringify(aiResult, null, 2);
-    } catch (err) {
-      console.error('Errore serializzazione risultato AI', err);
-      return String(aiResult);
-    }
-  }, [aiResult]);
-
-  const itemsCount = useMemo(() => {
-    if (!aiResult || typeof aiResult !== 'object') {
-      return 0;
-    }
-    const items = (aiResult as { items?: unknown[] }).items;
-    return Array.isArray(items) ? items.length : 0;
-  }, [aiResult]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
@@ -92,9 +68,7 @@ const ComparePage = () => {
 
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('source_label', sourceLabel || 'A');
-
-      const response = await fetch('/api/ai/normalize', {
+      const response = await fetch('/api/ai/evaluate', {
         method: 'POST',
         body: formData,
       });
@@ -108,8 +82,8 @@ const ComparePage = () => {
         throw new Error(payload?.error || 'Errore durante l\'analisi AI');
       }
 
-      setAiResult(payload);
-      console.log('AI normalized output:', payload);
+      setAiResult(payload as EvaluateResponse);
+      console.log('AI evaluation output:', payload);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Errore imprevisto durante l\'analisi AI';
       setError(message);
@@ -122,7 +96,7 @@ const ComparePage = () => {
     <main className={styles.page}>
       <div className={styles.header}>
         <h1>Analisi Preventivo</h1>
-        <p>Carica un preventivo (PDF, TXT, CSV o XLSX) e lascia che Gemini estragga e normalizzi le voci.</p>
+        <p>Carica un preventivo in PDF e lascia che Gemini evidenzi inclusioni, esclusioni e rischi principali.</p>
       </div>
 
       <Card title="Caricamento preventivo">
@@ -138,22 +112,7 @@ const ComparePage = () => {
             onChange={handleFileChange}
           />
           <p className={styles.fileHint}>{fileHint}</p>
-          <p className={styles.accepted}>Formati supportati: PDF, TXT, CSV, XLSX (max 20MB)</p>
-
-          <label className={styles.sourceLabel} htmlFor="sourceLabel">
-            Etichetta sorgente (A/B/C...)
-          </label>
-         <input
-            id="sourceLabel"
-            className={styles.sourceInput}
-            type="text"
-            maxLength={1}
-            value={sourceLabel}
-            onChange={(event) => {
-              const value = (event.target.value || '').toUpperCase().slice(0, 1);
-              setSourceLabel(value || 'A');
-            }}
-          />
+          <p className={styles.accepted}>Formato supportato: solo PDF (max 20MB)</p>
 
           {error ? <p className={styles.error}>{error}</p> : null}
         </div>
@@ -163,19 +122,8 @@ const ComparePage = () => {
         <Button onClick={handleAnalyze}>{isLoading ? 'Richiesta a Gemini…' : 'Analizza preventivo'}</Button>
       </div>
 
-      <Card title="Risultato AI (JSON)">
-        {formattedResult ? (
-          <div className={styles.outputBox}>
-            <p className={styles.outputIntro}>
-              {itemsCount > 0
-                ? `Elementi normalizzati restituiti: ${itemsCount}`
-                : 'Risposta ricevuta dal modello Gemini.'}
-            </p>
-            <pre className={styles.resultPre}>{formattedResult}</pre>
-          </div>
-        ) : (
-          <p className={styles.placeholder}>Nessun output ancora disponibile.</p>
-        )}
+      <Card title="Risultato AI">
+        <EvaluateResults data={aiResult} />
       </Card>
     </main>
   );
