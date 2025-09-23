@@ -173,8 +173,8 @@ const ComparePage = () => {
       <div className={styles.header}>
         <h1>Analisi Preventivo</h1>
         <p>
-          Carica un preventivo in PDF e lascia che Gemini evidenzi inclusioni,
-          esclusioni e rischi principali.
+          Carica il tuo preventivo, noi ti diciamo subito cosa manca e dove
+          rischi di più.
         </p>
       </div>
 
