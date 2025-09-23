@@ -1,16 +1,25 @@
 // Small string helpers shared by formatting and UI layers.
-export function truncateWords(input: string, maxWords: number): string {
-  const trimmed = (input ?? "").trim();
-  if (!trimmed || maxWords <= 0) {
+export function normalizeSpaces(input: string): string {
+  if (!input) {
     return "";
   }
 
-  const words = trimmed.split(/\s+/);
-  if (words.length <= maxWords) {
-    return trimmed;
+  return input.replace(/\s+/g, " ").trim();
+}
+
+export function truncateWords(input: string, maxWords: number): string {
+  const normalized = normalizeSpaces(input ?? "");
+  if (!normalized || maxWords <= 0) {
+    return "";
   }
 
-  return `${words.slice(0, maxWords).join(" ")}…`;
+  const words = normalized.split(" ");
+  if (words.length <= maxWords) {
+    return normalized;
+  }
+
+  const snippet = words.slice(0, maxWords).join(" ");
+  return `${snippet.replace(/[.,;:]+$/, "")}…`;
 }
 
 export function toMoney(n?: number | null): string {
