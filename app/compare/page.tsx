@@ -12,6 +12,7 @@ import CategorySelector, {
   type CategoryInfo,
 } from '@/components/CategorySelector/CategorySelector';
 import LoadingOverlay from '@/components/ui/LoadingOverlay';
+import { trackEvent } from '@/lib/analytics';
 
 const ACCEPTED_EXTENSIONS = ['.pdf'];
 const ACCEPTED_TYPES = ['application/pdf'];
@@ -121,6 +122,11 @@ const ComparePage = () => {
 
     setSelectedFile(file);
     setError(null);
+    trackEvent('file_upload', {
+      category: selectedCategory ?? 'non_selezionato',
+      fileName: file.name,
+      fileSize: file.size,
+    });
   };
 
   const handleAnalyze = async () => {
@@ -155,6 +161,10 @@ const ComparePage = () => {
 
       setHasSubmitted(true);
       setAiResult(payload as EvaluateResponse);
+      trackEvent('analizza_preventivo', {
+        category: selectedCategory ?? 'non_selezionato',
+        fileName: selectedFile.name,
+      });
       console.log('AI evaluation output:', payload);
     } catch (err) {
       const message =

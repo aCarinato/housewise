@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import '../styles/globals.css';
 import { montserrat } from '@/styles/fonts';
 
@@ -14,6 +15,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Script
+        async
+        src="https://cloud.umami.is/script.js"
+        data-website-id="a9c886d8-325d-438c-8309-836d7a4fd551"
+        strategy="afterInteractive"
+      />
       <body className={`${montserrat.className}`}>{children}</body>
     </html>
   );
