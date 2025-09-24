@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI, type Part } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/files';
+import { parsePdfToLines } from '@/lib/parsers/pdf';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,13 @@ const DEFAULT_SUPPLIER_QUESTIONS = [
   'Richiedere conferma scritta su smaltimenti, pratiche e garanzie comprese',
   'Verificare tempi di esecuzione, eventuali penali e condizioni di pagamento',
 ];
+
+const VALIDATION_SYSTEM_PROMPT = `
+Sei un assistente tecnico che valuta testi per capire se appartengono a un preventivo edilizio (ristrutturazioni, impianti, serramenti, ecc.).
+Rispondi SOLO in JSON con le chiavi: ok (boolean) e reason (stringa molto breve in italiano).
+Devi restituire ok=true solo se il testo suggerisce chiaramente un preventivo per lavori/impianti di edilizia abitativa o simili.
+Se il testo è un altro tipo di documento o non è chiaro, rispondi ok=false e motiva sinteticamente.
+`.trim();
 
 const KIND_ORDER = ['risk', 'missing', 'exclusion', 'ambiguity', 'inclusion', 'note'] as const;
 type FindingKind = (typeof KIND_ORDER)[number];
@@ -243,6 +251,55 @@ function sanitizeSupplierQuestions(value: unknown, fallbackSources: string[]): s
   return [...merged, ...defaults].slice(0, 7);
 }
 
+async function validateQuoteWithAI(
+  genAI: GoogleGenerativeAI,
+  preview: string,
+): Promise<{ ok: boolean; reason: string }> {
+  const text = preview.trim();
+  if (!text) {
+    return { ok: false, reason: 'Documento vuoto o non leggibile.' };
+  }
+
+  const validator = genAI.getGenerativeModel({
+    model: 'gemini-1.5-flash',
+    generationConfig: { temperature: 0, responseMimeType: 'application/json' },
+  });
+
+  const prompt = `Testo estratto (anteprima max 4000 caratteri):\n\n${text.slice(0, 4000)}`;
+  const result = await validator.generateContent({
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          { text: VALIDATION_SYSTEM_PROMPT },
+          { text: prompt },
+          { text: 'Rispondi in JSON: { "ok": true|false, "reason": "..." }' },
+        ],
+      },
+    ],
+  });
+
+  const textResponse = result.response?.text() ?? '{}';
+  try {
+    const parsed = JSON.parse(textResponse) as { ok?: boolean; reason?: string };
+    if (typeof parsed.ok === 'boolean') {
+      return {
+        ok: parsed.ok,
+        reason:
+          clampLen(String(parsed.reason ?? '').trim(), 150) ||
+          'Il documento non sembra essere un preventivo edilizio.',
+      };
+    }
+  } catch (error) {
+    console.warn('validateQuoteWithAI JSON parse error', error);
+  }
+
+  return {
+    ok: false,
+    reason: 'Il documento non sembra essere un preventivo edilizio.',
+  };
+}
+
 const SYSTEM = `
 Sei un valutatore di preventivi di ristrutturazione (mercato italiano).
 Devi analizzare un solo documento e restituire SOLO JSON.
@@ -294,6 +351,24 @@ export async function POST(req: NextRequest) {
     const fileManager = new GoogleAIFileManager(apiKey);
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    let previewLines: string[] = [];
+    try {
+      previewLines = await parsePdfToLines(buffer);
+    } catch (error) {
+      console.warn('Preview parsing failed', error);
+    }
+
+    const previewText = previewLines.slice(0, 200).join('\n');
+    if (previewText.replace(/\s+/g, '').length >= 200) {
+      const validation = await validateQuoteWithAI(genAI, previewText);
+      if (!validation.ok) {
+        return NextResponse.json(
+          { error: validation.reason || 'Il documento non sembra essere un preventivo edilizio.' },
+          { status: 400 },
+        );
+      }
+    }
+
     const parts: Part[] = [{ text: SYSTEM }, { text: INSTRUCTIONS }, { text: `SOURCE_LABEL=${sourceLabel}` }];
 
     const uploaded = await uploadPdfToGemini(fileManager, file, buffer, ext);
