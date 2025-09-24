@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import { scrollIntoViewIfNeeded } from '@/lib/dom';
 import styles from './EvaluateResults.module.css';
 
 export type EvidenceItem = { text: string; page?: number };
@@ -62,6 +63,7 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
 
   const sections = [
     {
+      id: 'inclusioni',
       key: 'inclusioni',
       title: 'Inclusioni dichiarate',
       description: 'Elementi che il preventivo conferma chiaramente essere compresi nel prezzo.',
@@ -69,6 +71,7 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
       ordered: false,
     },
     {
+      id: 'esclusioni',
       key: 'esclusioni',
       title: 'Esclusioni esplicite',
       description: 'Attività, materiali o oneri segnalati come esclusi o a carico del committente.',
@@ -76,6 +79,7 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
       ordered: false,
     },
     {
+      id: 'mancanze',
       key: 'mancanze',
       title: 'Mancanze da chiarire',
       description: 'Aspetti attesi ma non trovati nel preventivo (tempi, garanzie, pratiche, ecc.).',
@@ -83,6 +87,7 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
       ordered: false,
     },
     {
+      id: 'ambigui',
       key: 'ambigui',
       title: 'Punti ambigui',
       description: 'Voci poco chiare o descritte in modo generico che meritano un approfondimento.',
@@ -92,12 +97,19 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
   ].filter((section) => section.items.length > 0);
 
   const summaryCounts = [
-    { label: 'Inclusioni', count: inclusioni_evidenti.length },
-    { label: 'Esclusioni', count: esclusioni_evidenti.length },
-    { label: 'Mancanze', count: checklist_mancanze.length },
-    { label: 'Ambiguità', count: punti_ambigui.length },
-    { label: 'Domande al fornitore', count: supplier_questions.length },
+    { label: 'Inclusioni', count: inclusioni_evidenti.length, target: 'section-inclusioni' },
+    { label: 'Esclusioni', count: esclusioni_evidenti.length, target: 'section-esclusioni' },
+    { label: 'Mancanze', count: checklist_mancanze.length, target: 'section-mancanze' },
+    { label: 'Ambiguità', count: punti_ambigui.length, target: 'section-ambigui' },
+    { label: 'Domande al fornitore', count: supplier_questions.length, target: 'supplier-questions' },
   ].filter(({ count }) => count > 0);
+
+  const handleSummaryClick = (targetId: string) => {
+    const element = document.getElementById(targetId);
+    if (element) {
+      scrollIntoViewIfNeeded(element as HTMLElement, 120);
+    }
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -105,8 +117,16 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
         <h3>Riepilogo</h3>
         {summaryCounts.length > 0 ? (
           <div className={styles.summaryCounts}>
-            {summaryCounts.map(({ label, count }) => (
-              <span key={label}>{`${count} ${label}`}</span>
+            {summaryCounts.map(({ label, count, target }) => (
+              <button
+                key={target}
+                type="button"
+                className={styles.summaryPill}
+                onClick={() => handleSummaryClick(target)}
+              >
+                <strong>{count}</strong>
+                <span>{label}</span>
+              </button>
             ))}
           </div>
         ) : (
@@ -119,7 +139,7 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
         <p>{overview}</p>
       </section>
 
-      <section className={styles.questionsBox}>
+      <section className={styles.questionsBox} id="supplier-questions">
         <h3>Cosa chiedere al fornitore</h3>
         <p className={styles.sectionNote}>Domande suggerite per evitare sorprese e ottenere un preventivo realmente completo.</p>
         <ol>
@@ -132,7 +152,7 @@ const EvaluateResults = memo(({ data }: EvaluateResultsProps) => {
       {sections.length > 0 ? (
         <section className={styles.sectionsGrid}>
           {sections.map((section) => (
-            <div key={section.key} className={styles.sectionCard}>
+            <div key={section.key} id={`section-${section.id}`} className={styles.sectionCard}>
               <header>
                 <h4>{section.title}</h4>
                 <p className={styles.sectionNote}>{section.description}</p>

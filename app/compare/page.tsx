@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { bytesToReadable } from '@/lib/utils/file';
@@ -13,6 +13,7 @@ import CategorySelector, {
 } from '@/components/CategorySelector/CategorySelector';
 import LoadingOverlay from '@/components/ui/LoadingOverlay';
 import { trackEvent } from '@/lib/analytics';
+import { scrollIntoViewIfNeeded } from '@/lib/dom';
 
 const ACCEPTED_EXTENSIONS = ['.pdf'];
 const ACCEPTED_TYPES = ['application/pdf'];
@@ -86,9 +87,13 @@ const ComparePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<EvaluateResponse | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const uploadRef = useRef<HTMLDivElement | null>(null);
+  const actionsRef = useRef<HTMLDivElement | null>(null);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
 
   const handleCategorySelect = (categoryId: CategoryInfo['id']) => {
-    setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
+    const nextCategory = categoryId === selectedCategory ? null : categoryId;
+    setSelectedCategory(nextCategory);
     setSelectedFile(null);
     setHasSubmitted(false);
     setAiResult(null);
@@ -177,6 +182,24 @@ const ComparePage = () => {
     }
   };
 
+  useEffect(() => {
+    if (selectedCategory && uploadRef.current) {
+      scrollIntoViewIfNeeded(uploadRef.current);
+    }
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (selectedFile && actionsRef.current) {
+      scrollIntoViewIfNeeded(actionsRef.current);
+    }
+  }, [selectedFile]);
+
+  useEffect(() => {
+    if (hasSubmitted && !isLoading && resultsRef.current) {
+      scrollIntoViewIfNeeded(resultsRef.current);
+    }
+  }, [hasSubmitted, isLoading]);
+
   return (
     <main className={styles.page}>
       {isLoading ? <LoadingOverlay /> : null}
@@ -198,7 +221,7 @@ const ComparePage = () => {
 
       {selectedCategory ? (
         <Card title="Caricamento preventivo">
-          <div className={styles.uploadArea}>
+          <div ref={uploadRef} className={styles.uploadArea}>
             {/* <p className={styles.fileLabel}>Seleziona il preventivo in formato PDF</p> */}
             <label className={styles.fileButton} htmlFor="quoteFile">
               Carica file PDF
@@ -221,7 +244,7 @@ const ComparePage = () => {
       ) : null}
 
       {selectedFile ? (
-        <div className={styles.actions}>
+        <div ref={actionsRef} className={styles.actions}>
           <Button onClick={handleAnalyze} disabled={isLoading}>
             {isLoading ? 'Richiesta a Gemini…' : 'Analizza preventivo'}
           </Button>
@@ -229,8 +252,10 @@ const ComparePage = () => {
       ) : null}
 
       {hasSubmitted ? (
-        <Card title="Risultato AI">
-          <EvaluateResults data={aiResult} />
+        <Card title="">
+          <div ref={resultsRef}>
+            <EvaluateResults data={aiResult} />
+          </div>
         </Card>
       ) : null}
     </main>
