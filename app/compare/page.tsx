@@ -15,6 +15,12 @@ import LoadingOverlay from '@/components/ui/LoadingOverlay';
 import { trackEvent } from '@/lib/analytics';
 import { scrollIntoViewIfNeeded } from '@/lib/dom';
 
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
 const ACCEPTED_EXTENSIONS = ['.pdf'];
 const ACCEPTED_TYPES = ['application/pdf'];
 
@@ -132,6 +138,11 @@ const ComparePage = () => {
       fileName: file.name,
       fileSize: file.size,
     });
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      window.fbq('trackCustom', 'PreventivoUpload', {
+        category: selectedCategory ?? 'non_selezionato',
+      });
+    }
   };
 
   const handleAnalyze = async () => {
